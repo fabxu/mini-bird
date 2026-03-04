@@ -1,0 +1,331 @@
+[
+    {
+      "question_id": 1471,
+      "db_id": "debit_card_specializing",
+      "question": "What is the ratio of customers who pay in EUR against customers who pay in CZK?",
+      "evidence": "ratio of customers who pay in EUR against customers who pay in CZK = count(Currency = 'EUR') / count(Currency = 'CZK').",
+      "SQL": "SELECT  CAST(SUM(CASE WHEN `Currency` = 'EUR' THEN 1 ELSE 0 END) AS DOUBLE) / SUM(CASE WHEN `Currency` = 'CZK' THEN 1 ELSE 0 END) FROM `customers`",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1472,
+      "db_id": "debit_card_specializing",
+      "question": "In 2012, who had the least consumption in LAM?",
+      "evidence": "Year 2012 can be presented as Between 201201 And 201212; The first 4 strings of the Date values in the yearmonth table can represent year.",
+      "SQL": "SELECT\n  `T1`.`CustomerID`\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T1`.`Segment` = 'LAM' AND SUBSTR(`T2`.`Date`, 1, 4) = '2012'\nGROUP BY\n  `T1`.`CustomerID`\nORDER BY\n  SUM(`T2`.`Consumption`) ASC\nLIMIT 1",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1473,
+      "db_id": "debit_card_specializing",
+      "question": "What was the average monthly consumption of customers in SME for the year 2013?",
+      "evidence": "Average Monthly consumption = AVG(Consumption) / 12; Year 2013 can be presented as Between 201301 And 201312; The first 4 strings of the Date values in the yearmonth table can represent year.",
+      "SQL": "SELECT\n  AVG(`T2`.`Consumption`) / 12\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  SUBSTR(`T2`.`Date`, 1, 4) = '2013' AND `T1`.`Segment` = 'SME'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1476,
+      "db_id": "debit_card_specializing",
+      "question": "What was the difference in gas consumption between CZK-paying customers and EUR-paying customers in 2012?",
+      "evidence": "Year 2012 can be presented as Between 201201 And 201212; The first 4 strings of the Date values in the yearmonth table can represent year; Difference in Consumption = CZK customers consumption in 2012 - EUR customers consumption in 2012",
+      "SQL": "SELECT\n  SUM(CASE WHEN `T1`.`Currency` = 'CZK' THEN `T2`.`Consumption` ELSE 0 END) - SUM(CASE WHEN `T1`.`Currency` = 'EUR' THEN `T2`.`Consumption` ELSE 0 END)\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  SUBSTR(`T2`.`Date`, 1, 4) = '2012'",
+      "difficulty": "challenging"
+    },
+    {
+      "question_id": 1479,
+      "db_id": "debit_card_specializing",
+      "question": "Which year recorded the most consumption of gas paid in CZK?",
+      "evidence": "The first 4 strings of the Date values in the yearmonth table can represent year.",
+      "SQL": "SELECT\n  SUBSTR(`T2`.`Date`, 1, 4)\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T1`.`Currency` = 'CZK'\nGROUP BY\n  SUBSTR(`T2`.`Date`, 1, 4)\nORDER BY\n  SUM(`T2`.`Consumption`) DESC\nLIMIT 1",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1480,
+      "db_id": "debit_card_specializing",
+      "question": "What was the gas consumption peak month for SME customers in 2013?",
+      "evidence": "Year 2013 can be presented as Between 201301 And 201312; The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month.",
+      "SQL": "SELECT\n  SUBSTR(`T2`.`Date`, 5, 2)\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  SUBSTR(`T2`.`Date`, 1, 4) = '2013' AND `T1`.`Segment` = 'SME'\nGROUP BY\n  SUBSTR(`T2`.`Date`, 5, 2)\nORDER BY\n  SUM(`T2`.`Consumption`) DESC\nLIMIT 1",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1481,
+      "db_id": "debit_card_specializing",
+      "question": "What is the difference in the annual average consumption of the customers with the least amount of consumption paid in CZK for 2013 between SME and LAM, LAM and KAM, and KAM and SME?",
+      "evidence": "annual average consumption of customer with the lowest consumption in each segment = total consumption per year / the number of customer with lowest consumption in each segment; Difference in annual average = SME's annual average - LAM's annual average; Difference in annual average = LAM's annual average - KAM's annual average; Year 2013 can be presented as Between 201301 And 201312; The first 4 strings of the Date values in the yearmonth table can represent year.",
+      "SQL": "SELECT\n  CAST(SUM(CASE WHEN `T1`.`Segment` = 'SME' THEN `T2`.`Consumption` ELSE 0 END) AS DOUBLE) / COUNT(`T1`.`CustomerID`) - CAST(SUM(CASE WHEN `T1`.`Segment` = 'LAM' THEN `T2`.`Consumption` ELSE 0 END) AS DOUBLE) / COUNT(`T1`.`CustomerID`),\n  CAST(SUM(CASE WHEN `T1`.`Segment` = 'LAM' THEN `T2`.`Consumption` ELSE 0 END) AS DOUBLE) / COUNT(`T1`.`CustomerID`) - CAST(SUM(CASE WHEN `T1`.`Segment` = 'KAM' THEN `T2`.`Consumption` ELSE 0 END) AS DOUBLE) / COUNT(`T1`.`CustomerID`),\n  CAST(SUM(CASE WHEN `T1`.`Segment` = 'KAM' THEN `T2`.`Consumption` ELSE 0 END) AS DOUBLE) / COUNT(`T1`.`CustomerID`) - CAST(SUM(CASE WHEN `T1`.`Segment` = 'SME' THEN `T2`.`Consumption` ELSE 0 END) AS DOUBLE) / COUNT(`T1`.`CustomerID`)\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T1`.`Currency` = 'CZK'\n  AND `T2`.`Consumption` = (\n    SELECT\n      MIN(`Consumption`)\n    FROM `yearmonth`\n  )\n  AND `T2`.`Date` BETWEEN 201301 AND 201312",
+      "difficulty": "challenging"
+    },
+    {
+      "question_id": 1482,
+      "db_id": "debit_card_specializing",
+      "question": "Which of the three segments\u2014SME, LAM and KAM\u2014has the biggest and lowest percentage increases in consumption paid in EUR between 2012 and 2013?",
+      "evidence": "Increase or Decrease = consumption for 2013 - consumption for 2012; Percentage of Increase = (Increase or Decrease / consumption for 2013) * 100%; The first 4 strings of the Date values in the yearmonth table can represent year",
+      "SQL": "SELECT\n  CAST((\n    SUM(\n      CASE\n        WHEN `T1`.`Segment` = 'SME' AND `T2`.`Date` LIKE '2013%'\n        THEN `T2`.`Consumption`\n        ELSE 0\n      END\n    ) - SUM(\n      CASE\n        WHEN `T1`.`Segment` = 'SME' AND `T2`.`Date` LIKE '2012%'\n        THEN `T2`.`Consumption`\n        ELSE 0\n      END\n    )\n  ) AS DOUBLE) * 100 / SUM(\n    CASE\n      WHEN `T1`.`Segment` = 'SME' AND `T2`.`Date` LIKE '2012%'\n      THEN `T2`.`Consumption`\n      ELSE 0\n    END\n  ),\n  CAST(SUM(\n    CASE\n      WHEN `T1`.`Segment` = 'LAM' AND `T2`.`Date` LIKE '2013%'\n      THEN `T2`.`Consumption`\n      ELSE 0\n    END\n  ) - SUM(\n    CASE\n      WHEN `T1`.`Segment` = 'LAM' AND `T2`.`Date` LIKE '2012%'\n      THEN `T2`.`Consumption`\n      ELSE 0\n    END\n  ) AS DOUBLE) * 100 / SUM(\n    CASE\n      WHEN `T1`.`Segment` = 'LAM' AND `T2`.`Date` LIKE '2012%'\n      THEN `T2`.`Consumption`\n      ELSE 0\n    END\n  ),\n  CAST(SUM(\n    CASE\n      WHEN `T1`.`Segment` = 'KAM' AND `T2`.`Date` LIKE '2013%'\n      THEN `T2`.`Consumption`\n      ELSE 0\n    END\n  ) - SUM(\n    CASE\n      WHEN `T1`.`Segment` = 'KAM' AND `T2`.`Date` LIKE '2012%'\n      THEN `T2`.`Consumption`\n      ELSE 0\n    END\n  ) AS DOUBLE) * 100 / SUM(\n    CASE\n      WHEN `T1`.`Segment` = 'KAM' AND `T2`.`Date` LIKE '2012%'\n      THEN `T2`.`Consumption`\n      ELSE 0\n    END\n  )\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`",
+      "difficulty": "challenging"
+    },
+    {
+      "question_id": 1483,
+      "db_id": "debit_card_specializing",
+      "question": "How much did customer 6 consume in total between August and November 2013?",
+      "evidence": "Between August And November 2013 refers to Between 201308 And 201311; The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month.",
+      "SQL": "SELECT\n  SUM(`Consumption`)\nFROM `yearmonth`\nWHERE\n  `CustomerID` = 6 AND `Date` BETWEEN '201308' AND '201311'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1484,
+      "db_id": "debit_card_specializing",
+      "question": "How many more \"discount\" gas stations does the Czech Republic have compared to Slovakia?",
+      "evidence": "Czech Republic can be represented as the Country value in gasstations table is 'CZE'; Slovakia can be represented as the Country value in the gasstations table is 'SVK';  Computation of more \"discount\" gas stations= Total no. of discount gas stations in Czech Republic - Total no. of discount gas stations in Slovakia",
+      "SQL": "SELECT\n  SUM(CASE WHEN `Country` = 'CZE' THEN 1 ELSE 0 END) - SUM(CASE WHEN `Country` = 'SVK' THEN 1 ELSE 0 END)\nFROM `gasstations`\nWHERE\n  `Segment` = 'Discount'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1486,
+      "db_id": "debit_card_specializing",
+      "question": "Is it true that more SMEs pay in Czech koruna than in euros? If so, how many more?",
+      "evidence": "Amount of more SMEs = Total of SMEs pay using Currency CZK - Total of SMEs pay using Currency EUR",
+      "SQL": "SELECT\n  SUM(`Currency` = 'CZK') - SUM(`Currency` = 'EUR')\nFROM `customers`\nWHERE\n  `Segment` = 'SME'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1490,
+      "db_id": "debit_card_specializing",
+      "question": "How many percent of LAM customer consumed more than 46.73?",
+      "evidence": "Percentage of LAM customer consumed more than 46.73 = (Total no. of LAM customers who consumed more than 46.73 / Total no. of LAM customers) * 100.",
+      "SQL": "SELECT\n  CAST(SUM(CASE WHEN `T2`.`Consumption` > 46.73 THEN 1 ELSE 0 END) AS DOUBLE) * 100 / COUNT(`T1`.`CustomerID`)\nFROM `customers` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T1`.`Segment` = 'LAM'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1493,
+      "db_id": "debit_card_specializing",
+      "question": "In February 2012, what percentage of customers consumed more than 528.3?",
+      "evidence": "February 2012 refers to '201202' in yearmonth.date; The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month.",
+      "SQL": "SELECT\n  CAST(SUM(CASE WHEN `Consumption` > 528.3 THEN 1 ELSE 0 END) AS DOUBLE) * 100 / COUNT(`CustomerID`)\nFROM `yearmonth`\nWHERE\n  `Date` = '201202'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1498,
+      "db_id": "debit_card_specializing",
+      "question": "What is the highest monthly consumption in the year 2012?",
+      "evidence": "The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month.",
+      "SQL": "SELECT\n  SUM(`Consumption`)\nFROM `yearmonth`\nWHERE\n  SUBSTR(`Date`, 1, 4) = '2012'\nGROUP BY\n  SUBSTR(`Date`, 5, 2)\nORDER BY\n  SUM(`Consumption`) DESC\nLIMIT 1",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1500,
+      "db_id": "debit_card_specializing",
+      "question": "Please list the product description of the products consumed in September, 2013.",
+      "evidence": "September 2013 refers to 201309; The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month.",
+      "SQL": "SELECT\n  `T3`.`Description`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nINNER JOIN `products` AS `T3`\n  ON `T1`.`ProductID` = `T3`.`ProductID`\nWHERE\n  `T2`.`Date` = '201309'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1501,
+      "db_id": "debit_card_specializing",
+      "question": "Please list the countries of the gas stations with transactions taken place in June, 2013.",
+      "evidence": "June 2013 refers to '201306'; The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month;",
+      "SQL": "SELECT DISTINCT\n  `T2`.`Country`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nINNER JOIN `yearmonth` AS `T3`\n  ON `T1`.`CustomerID` = `T3`.`CustomerID`\nWHERE\n  `T3`.`Date` = '201306'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1505,
+      "db_id": "debit_card_specializing",
+      "question": "Among the customers who paid in euro, how many of them have a monthly consumption of over 1000?",
+      "evidence": "Pays in euro = Currency = 'EUR'.",
+      "SQL": "SELECT\n  COUNT(*)\nFROM `yearmonth` AS `T1`\nINNER JOIN `customers` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T2`.`Currency` = 'EUR' AND `T1`.`Consumption` > 1000.00",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1506,
+      "db_id": "debit_card_specializing",
+      "question": "Please list the product descriptions of the transactions taken place in the gas stations in the Czech Republic.",
+      "evidence": "Czech Republic can be represented as the Country value in the gasstations table is 'CZE'; ",
+      "SQL": "SELECT DISTINCT\n  `T3`.`Description`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nINNER JOIN `products` AS `T3`\n  ON `T1`.`ProductID` = `T3`.`ProductID`\nWHERE\n  `T2`.`Country` = 'CZE'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1507,
+      "db_id": "debit_card_specializing",
+      "question": "Please list the disparate time of the transactions taken place in the gas stations from chain no. 11.",
+      "evidence": "",
+      "SQL": "SELECT DISTINCT\n  `T1`.`Time`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nWHERE\n  `T2`.`ChainID` = 11",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1509,
+      "db_id": "debit_card_specializing",
+      "question": "Among the transactions made in the gas stations in the Czech Republic, how many of them are taken place after 2012/1/1?",
+      "evidence": "Czech Republic can be represented as the Country value in the gasstations table is 'CZE'",
+      "SQL": "SELECT\n  COUNT(`T1`.`TransactionID`)\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nWHERE\n  `T2`.`Country` = 'CZE'\n  AND DATE_FORMAT(CAST(`T1`.`Date` AS DATETIME), '%Y') >= '2012'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1514,
+      "db_id": "debit_card_specializing",
+      "question": "What kind of currency did the customer paid at 16:25:00 in 2012/8/24?",
+      "evidence": "'2012/8/24' can be represented by '2012-08-24'; ",
+      "SQL": "SELECT DISTINCT\n  `T3`.`Currency`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nINNER JOIN `customers` AS `T3`\n  ON `T1`.`CustomerID` = `T3`.`CustomerID`\nWHERE\n  `T1`.`Date` = '2012-08-24' AND `T1`.`Time` = '16:25:00'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1515,
+      "db_id": "debit_card_specializing",
+      "question": "What segment did the customer have at 2012/8/23 21:20:00?",
+      "evidence": "'2012/8/23' can be represented by '2012-08-23'",
+      "SQL": "SELECT\n  `T2`.`Segment`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `customers` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T1`.`date` = '2012-08-23' AND `T1`.`time` = '21:20:00'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1521,
+      "db_id": "debit_card_specializing",
+      "question": "For all the transactions happened during 8:00-9:00 in 2012/8/26, how many happened in CZE?",
+      "evidence": "Czech Republic can be represented as the Country value in the gasstations table is 'CZE'; '2012/8/26' can be represented by '2012-08-26'; during 8:00-9:00 can be represented as Time BETWEEN '08:00:00' AND '09:00:00'",
+      "SQL": "SELECT\n  COUNT(`T1`.`TransactionID`)\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nWHERE\n  `T1`.`Date` = '2012-08-26'\n  AND `T1`.`Time` BETWEEN '08:00:00' AND '09:00:00'\n  AND `T2`.`Country` = 'CZE'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1524,
+      "db_id": "debit_card_specializing",
+      "question": "What's the nationality of the customer who spent 548.4 in 2012/8/24?",
+      "evidence": "'2012/8/24' can be represented by '2012-08-24'",
+      "SQL": "SELECT\n  `T2`.`Country`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nWHERE\n  `T1`.`Date` = '2012-08-24' AND  `T1`.`Price` = 548.4",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1525,
+      "db_id": "debit_card_specializing",
+      "question": "What is the percentage of the customers who used EUR in 2012/8/25?",
+      "evidence": "'2012/8/25' can be represented by '2012-08-25'",
+      "SQL": "SELECT\n  CAST(SUM(CASE WHEN `T2`.`Currency` = 'EUR' THEN 1 ELSE 0 END) AS DOUBLE) * 100 / COUNT(`T1`.`CustomerID`)\nFROM `transactions_1k` AS `T1`\nINNER JOIN `customers` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T1`.`Date` = '2012-08-25'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1526,
+      "db_id": "debit_card_specializing",
+      "question": "For the customer who paid 634.8 in 2012/8/25, what was the consumption decrease rate from Year 2012 to 2013?",
+      "evidence": "'2012/8/24' can be represented by '2012-08-24'; Consumption decrease rate = (consumption_2012 - consumption_2013) / consumption_2012",
+      "SQL": "SELECT\n  CAST(SUM(CASE WHEN SUBSTR(`Date`, 1, 4) = '2012' THEN `Consumption` ELSE 0 END) - SUM(CASE WHEN SUBSTR(`Date`, 1, 4) = '2013' THEN `Consumption` ELSE 0 END) AS DOUBLE) / SUM(CASE WHEN SUBSTR(`Date`, 1, 4) = '2012' THEN `Consumption` ELSE 0 END)\nFROM `yearmonth`\nWHERE\n  `CustomerID` = (\n    SELECT\n      `T1`.`CustomerID`\n    FROM `transactions_1k` AS `T1`\n    INNER JOIN `gasstations` AS `T2`\n      ON `T1`.`GasStationID` = `T2`.`GasStationID`\n    WHERE\n      `T1`.`Date` = '2012-08-25' AND `T1`.`Price`  = 1513.12   )",
+      "difficulty": "challenging"
+    },
+    {
+      "question_id": 1528,
+      "db_id": "debit_card_specializing",
+      "question": "What is the percentage of \"premium\" against the overall segment in Country = \"SVK\"?",
+      "evidence": "",
+      "SQL": "SELECT\n  CAST(SUM(CASE WHEN `Country` = 'SVK' AND `Segment` = 'Premium' THEN 1 ELSE 0 END) AS DOUBLE) * 100 / SUM(CASE WHEN `Country` = 'SVK' THEN 1 ELSE 0 END)\nFROM `gasstations`",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1529,
+      "db_id": "debit_card_specializing",
+      "question": "What is the amount spent by customer \"38508\" at the gas stations? How much had the customer spent in January 2012?",
+      "evidence": "January 2012 refers to the Date value = '201201'",
+      "SQL": "SELECT\n  SUM(`T1`.`Price` ),\n  SUM(CASE WHEN `T3`.`Date` = '201201' THEN `T1`.`Price` ELSE 0 END)\nFROM `transactions_1k` AS `T1`\nINNER JOIN `gasstations` AS `T2`\n  ON `T1`.`GasStationID` = `T2`.`GasStationID`\nINNER JOIN `yearmonth` AS `T3`\n  ON `T1`.`CustomerID` = `T3`.`CustomerID`\nWHERE\n  `T1`.`CustomerID` = '38508'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1531,
+      "db_id": "debit_card_specializing",
+      "question": "Who is the top spending customer and how much is the average price per single item purchased by this customer? What currency was being used?",
+      "evidence": "average price per single item = Total(price) / Total(amount)",
+      "SQL": "SELECT\n  `T2`.`CustomerID`,\n  SUM(`T2`.`Price` / `T2`.`Amount`),\n  `T1`.`Currency`\nFROM `customers` AS `T1`\nINNER JOIN `transactions_1k` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T2`.`CustomerID` = (\n    SELECT\n      `CustomerID`\n    FROM `yearmonth`\n    ORDER BY\n      `Consumption` DESC\n    LIMIT 1\n  )\nGROUP BY\n  `T2`.`CustomerID`,\n  `T1`.`Currency`",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1533,
+      "db_id": "debit_card_specializing",
+      "question": "For all the people who paid more than 29.00 per unit of product id No.5. Give their consumption status in the August of 2012.",
+      "evidence": "August of 2012 refers to the Date value = '201208' ; Price per unit of product = Price / Amount;",
+      "SQL": "SELECT\n  `T2`.`Consumption`\nFROM `transactions_1k` AS `T1`\nINNER JOIN `yearmonth` AS `T2`\n  ON `T1`.`CustomerID` = `T2`.`CustomerID`\nWHERE\n  `T1`.`Price` / `T1`.`Amount` > 29.00\n  AND `T1`.`ProductID` = 5\n  AND `T2`.`Date` = '201208'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1312,
+      "db_id": "student_club",
+      "question": "What's Angela Sanders's major?",
+      "evidence": "Angela Sanders is the full name; full name refers to first_name, last_name; major refers to major_name.",
+      "SQL": "SELECT\n  `T2`.`major_name`\nFROM `member` AS `T1`\nINNER JOIN `major` AS `T2`\n  ON `T1`.`link_to_major` = `T2`.`major_id`\nWHERE\n  `T1`.`first_name` = 'Angela' AND `T1`.`last_name` = 'Sanders'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1317,
+      "db_id": "student_club",
+      "question": "Among the students from the Student_Club who attended the event \"Women's Soccer\", how many of them want a T-shirt that's in medium size?",
+      "evidence": "Women's Soccer is an event name; T-shirt that is in medium size refers to t_shirt_size = 'Medium'",
+      "SQL": "SELECT\n  COUNT(`T1`.`event_id`)\nFROM `event` AS `T1`\nINNER JOIN `attendance` AS `T2`\n  ON `T1`.`event_id` = `T2`.`link_to_event`\nINNER JOIN `member` AS `T3`\n  ON `T2`.`link_to_member` = `T3`.`member_id`\nWHERE\n  `T1`.`event_name` = 'Women''s Soccer' AND `T3`.`t_shirt_size` = 'Medium'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1322,
+      "db_id": "student_club",
+      "question": "Among the events attended by more than 10 members of the Student_Club, how many of them are meetings?",
+      "evidence": "meetings events refers to type = 'Meeting'; attended by more than 10 members refers to COUNT(event_id) > 10",
+      "SQL": "SELECT COUNT(DISTINCT T1.event_id) FROM event AS T1 INNER JOIN attendance AS T2 ON T1.event_id = T2.link_to_event WHERE T1.type = 'Meeting' GROUP BY T1.event_id HAVING COUNT(T2.link_to_event) > 10",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1323,
+      "db_id": "student_club",
+      "question": "List all the names of events that had an attendance of over 20 students but were not fundraisers.",
+      "evidence": "name of events refers to event_name; attendance of over 20 students COUNT(event_id) > 20.",
+      "SQL": "SELECT `T1`.`event_name` FROM `event` AS `T1` INNER JOIN `attendance` AS `T2` ON `T1`.`event_id` = `T2`.`link_to_event` GROUP BY `T1`.`event_id` HAVING COUNT(`T2`.`link_to_event`) > 20 AND NOT EXISTS (SELECT 1 FROM `event` AS `E` WHERE `E`.`event_id` = `T1`.`event_id` AND `E`.`type` = 'Fundraiser')",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1331,
+      "db_id": "student_club",
+      "question": "What is the amount of the funds that the Vice President received?",
+      "evidence": "'Vice President' is a position of Student Club; funds received refers to amount.",
+      "SQL": "SELECT\n  `T2`.`amount`\nFROM `member` AS `T1`\nINNER JOIN `income` AS `T2`\n  ON `T1`.`member_id` = `T2`.`link_to_member`\nWHERE\n  `T1`.`position` = 'Vice President'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1334,
+      "db_id": "student_club",
+      "question": "List the full name of the Student_Club members that grew up in Illinois state.",
+      "evidence": "full name of member refers to first_name, last_name",
+      "SQL": "SELECT\n  `T1`.`first_name`,\n  `T1`.`last_name`\nFROM `member` AS `T1`\nINNER JOIN `zip_code` AS `T2`\n  ON `T1`.`zip` = `T2`.`zip_code`\nWHERE\n  `T2`.`state` = 'Illinois'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1338,
+      "db_id": "student_club",
+      "question": "Was each expense in October Meeting on October 8, 2019 approved?",
+      "evidence": "event_name = 'October Meeting' where event_date = '2019-10-08'; approved = True means expenses was approved; approved = False means expenses was not approved",
+      "SQL": "SELECT\n  `T3`.`approved`\nFROM `event` AS `T1`\nINNER JOIN `budget` AS `T2`\n  ON `T1`.`event_id` = `T2`.`link_to_event`\nINNER JOIN `expense` AS `T3`\n  ON `T2`.`budget_id` = `T3`.`link_to_budget`\nWHERE\n  `T1`.`event_name` = 'October Meeting' AND `T1`.`event_date` LIKE '2019-10-08%'",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1339,
+      "db_id": "student_club",
+      "question": "Calculate the total average cost that Elijah Allen spent in the events on September and October.",
+      "evidence": "Elijah Allen is the full name; full name refers to first_name, last_name; The 5th and 6th string of the expense_date in the expense table can refer to month; events in September and October refers to month(expense_date) = 9 OR month(expense_date) = 10",
+      "SQL": "SELECT\n  AVG(`T2`.`cost`)\nFROM `member` AS `T1`\nINNER JOIN `expense` AS `T2`\n  ON `T1`.`member_id` = `T2`.`link_to_member`\nWHERE\n  `T1`.`last_name` = 'Allen'\n  AND `T1`.`first_name` = 'Elijah'\n  AND (\n    SUBSTR(`T2`.`expense_date`, 6, 2) = '09'\n    OR SUBSTR(`T2`.`expense_date`, 6, 2) = '10'\n  )",
+      "difficulty": "challenging"
+    },
+    {
+      "question_id": 1340,
+      "db_id": "student_club",
+      "question": "Calculate the difference of the total amount spent in all events by the Student_Club in year 2019 and 2020.",
+      "evidence": "The first 4 strings of the event_date values in the event table can represent year; The difference of the total amount spent = SUBTRACT(spent where YEAR(event_date) = 2019, spent where YEAR(event_date) = 2020)",
+      "SQL": "SELECT\n  SUM(CASE WHEN SUBSTR(`T1`.`event_date`, 1, 4) = '2019' THEN `T2`.`spent` ELSE 0 END) - SUM(CASE WHEN SUBSTR(`T1`.`event_date`, 1, 4) = '2020' THEN `T2`.`spent` ELSE 0 END) AS `num`\nFROM `event` AS `T1`\nINNER JOIN `budget` AS `T2`\n  ON `T1`.`event_id` = `T2`.`link_to_event`",
+      "difficulty": "moderate"
+    },
+    {
+      "question_id": 1344,
+      "db_id": "student_club",
+      "question": "What was the notes of the fundraising on 2019/9/14?",
+      "evidence": "fundraising on 2019/9/14 refers to source = 'Fundraising' where date_received = '2019-09-14'",
+      "SQL": "SELECT\n  `notes`\nFROM `income`\nWHERE\n  `source` = 'Fundraising' AND `date_received` = '2019-09-14'",
+      "difficulty": "simple"
+    },
+    {
+      "question_id": 1346,
+      "db_id": "student_club",
+      "question": "Tell the phone number of \"Carlo Jacobs\".",
+      "evidence": "Carlo Jacobs is the full name; full name refers to first_name, last_name;",
+      "SQL": "SELECT\n  `phone`\nFROM `member`\nWHERE\n  `first_name` = 'Carlo' AND `last_name` = 'Jacobs'",
+      "difficulty": "simple"
+    }
+  ]
+  

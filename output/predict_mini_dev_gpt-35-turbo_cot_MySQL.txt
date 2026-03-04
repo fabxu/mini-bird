@@ -1,0 +1,15 @@
+start calculate EX
+                     simple               moderate             challenging          total               
+count                19                   17                   5                    41                  
+======================================    EX   =====================================
+EX                   57.89                52.94                20.00                51.22               
+===========================================================================================
+Finished EX evaluation for mini dev set
+
+start calculate R-VES
+                     simple               moderate             challenging          total               
+count                19                   17                   5                    41                  
+======================================    R-VES   =====================================
+R-VES                59.76                52.85                17.32                51.72               
+===========================================================================================
+Finished R-VES evaluation for mini dev set
